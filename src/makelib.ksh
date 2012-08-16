@@ -19,14 +19,12 @@ then
   echo Will build library with 4 byte floats.
   ln -fs makefile.conf_4  makefile.conf
   make
-  mv liblandsfcutil_4.a ../../
   rm -f makefile.conf
 elif [[ $1 = 8 ]]
 then
   echo Will build library with 8 byte floats.
   ln -fs makefile.conf_d makefile.conf
   make
-  mv liblandsfcutil_d.a ../../
   rm -f makefile.conf
 elif [[ $1 = "clean" ]]
 then

@@ -1,4 +1,4 @@
 
-MOD_DIR=../../incmod/landsfcutil_d
+MOD_DIR=../incmod/dbyte
 FFLAGS =  -q64 -I${MOD_DIR} -qmoddir=${MOD_DIR} -qrealsize=8 -O3 -qstrict -qessl -qmaxmem=-1
-LIB = ./liblandsfcutil_d.a
+LIB = ../lib/liblandsfcutil_d.a
