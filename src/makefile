@@ -10,7 +10,7 @@ OBJS = consts.o \
        ll2xy_utils.o
 
 ${LIB}:	${OBJS}
-	ar -rv -X64 ${LIB} ${OBJS}
+	ar -rv ${AFLAGS} ${LIB} ${OBJS}
 	rm ${OBJS} 
 
 consts.o: 

@@ -27,6 +27,7 @@ if [[ $1 = 4 ]]
 then
   echo Will build library with 4 byte floats.
   export FCOMP
+  export AFLAGS
   export FFLAGS=$FFLAGS_4
   export MOD_DIR=$MOD_DIR_4
   export LIB=../lib/liblandsfcutil_4.a
@@ -36,6 +37,7 @@ elif [[ $1 = 8 ]]
 then
   echo Will build library with 8 byte floats.
   export FCOMP
+  export AFLAGS
   export FFLAGS=$FFLAGS_D
   export MOD_DIR=$MOD_DIR_D
   export LIB=../lib/liblandsfcutil_d.a
@@ -43,11 +45,9 @@ then
   make
 elif [[ $1 = "clean" ]]
 then
-  export FFLAGS=$FFLAGS_4
   export MOD_DIR=$MOD_DIR_4
   export LIB=../lib/liblandsfcutil_4.a
   make clean 
-  export FFLAGS=$FFLAGS_D
   export MOD_DIR=$MOD_DIR_D
   export LIB=../lib/liblandsfcutil_d.a
   make clean 
