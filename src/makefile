@@ -1,5 +1,5 @@
 SHELL=	/bin/sh
-FCOMP = ncepxlf95
+
 SRC_DIR = ./
 
 OBJS = consts.o \
@@ -8,8 +8,6 @@ OBJS = consts.o \
        interp_utils.o \
        interp_utils_nesdis.o \
        ll2xy_utils.o
-
-include makefile.conf
 
 ${LIB}:	${OBJS}
 	ar -rv -X64 ${LIB} ${OBJS}
