@@ -1,0 +1,32 @@
+SHELL=	/bin/sh
+INC = /nwprod/lib/incmod/landsfcutil_d
+INC2 = /nwprod/lib/incmod/g2_d
+# WARNING.  THE G2 LIBRARY MUST BE LINKED BEFORE THE W3 LIBRARY.
+LIBS =/nwprod/lib/libg2_d.a /nwprod/lib/liblandsfcutil_d.a -L/nwprod/lib -lbacio_4 -L/nwprod/lib -lessl -L/nwprod/lib -lw3_d -lip_d -L/nwprod/lib -lsp_d -L/usrx/local/64bit/lib -ljasper -lpng -lz
+FC  = ncepxlf95
+FFLAGS = -C -g -O3 -I${INC} -I${INC2} -qsmp=noauto -qstrict -qmaxmem=-1 -qrealsize=8 -qintsize=4 -qextchk
+CMD= snow2mdl.exe
+
+OBJS = driver.o \
+       program_setup.o \
+       snowdat.o \
+       model_grid.o \
+       snow2mdl.o 
+
+$(CMD):	$(OBJS)
+	$(FC) $(FFLAGS) -o $(CMD) $(OBJS) $(LIBS) 
+	mv $(CMD) ../exec
+	rm -f $(OBJS) *.mod
+
+driver.o: snowdat.o model_grid.o snow2mdl.o program_setup.o
+	$(FC) $(FFLAGS) -c driver.f
+program_setup.o:
+	$(FC) $(FFLAGS) -c program_setup.f
+snowdat.o: program_setup.o model_grid.o
+	$(FC) $(FFLAGS) -c snowdat.f
+model_grid.o: program_setup.o
+	$(FC) $(FFLAGS) -c model_grid.f
+snow2mdl.o: snowdat.o program_setup.o model_grid.o
+	$(FC) $(FFLAGS) -c snow2mdl.f
+clean:
+	rm -f *.o *.mod $(CMD)
