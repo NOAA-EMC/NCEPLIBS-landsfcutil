@@ -5,12 +5,12 @@
 #    prgmmr: george gayno     ORG: NP2      DATE: 2005-09-15
 #
 # abstract: 
-#    builds sfcutil libraries with either 4 or 8 byte floats.
+#    builds sfcutil libraries with either 4 or d byte floats.
 #
 # usage:
 #    takes one command line argument. 
 #    type "makelib.ksh 4" for 4 byte version
-#    type "makelib.ksh 8" for 8 byte version
+#    type "makelib.ksh d" for d byte version
 #    type "makelib.ksh clean to remove both libraries
 #
 #-----------------------------------------------------------------
@@ -33,9 +33,9 @@ then
   export LIB=../lib/liblandsfcutil_4.a
   make clean
   make
-elif [[ $1 = 8 ]]
+elif [[ $1 = d ]]
 then
-  echo Will build library with 8 byte floats.
+  echo Will build library with d byte floats.
   export FCOMP
   export AFLAGS
   export FFLAGS=$FFLAGS_D
@@ -52,7 +52,7 @@ then
   export LIB=../lib/liblandsfcutil_d.a
   make clean 
 else
-  echo Must choose either 4 or 8 byte option.
+  echo Must choose either 4 or d byte option.
   exit 1
 fi
 
