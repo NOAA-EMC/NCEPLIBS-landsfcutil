@@ -3,6 +3,7 @@ export FCFLAGS=" \
  -fbounds-check \
  -ffpe-trap=overflow,zero,invalid \
  -ggdb \
+ -ffree-form \
  -Wall"
 export LDFLAGS=" "
 export LIBS=" "
