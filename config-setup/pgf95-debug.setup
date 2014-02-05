@@ -9,6 +9,7 @@ export FCFLAGS=" \
  -Minform,inform \
  -Mnosave \
  -Mref_externals \
+ -Mfree \
  -fast"
 export LDFLAGS=" "
 export LIBS=" "
