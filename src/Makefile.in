@@ -14,6 +14,7 @@ prefix      = @prefix@
 
 # Mixed package and prefix substitution variables
 installdir  = $(prefix)/$(distdir)
+nco_installdir = $(prefix)/$(tarname)/$(version)
 
 # Compiler substitution variables
 FC       = @FC@
@@ -57,25 +58,20 @@ install:
 	$(INSTALL_DATA) ../config.log $(DESTDIR)$(installdir)
 
 # ...NCO-style installation
-nco_install: FORCE
-	$(INSTALL) -d $(DESTDIR)$(installdir)
-	$(INSTALL_DATA) $(LIBRARY) $(DESTDIR)$(installdir)/lib$(distdir).a
-	$(INSTALL_DATA) ../config.log $(DESTDIR)$(installdir)/config.log.$(distdir)
-	$(INSTALL) -d $(DESTDIR)$(installdir)/incmod/$(distdir)
-	$(INSTALL_DATA) *.mod $(DESTDIR)$(installdir)/incmod/$(distdir)
+nco_install:
+	$(INSTALL) -d $(DESTDIR)$(nco_installdir)
+	$(INSTALL_DATA) $(LIBRARY) $(DESTDIR)$(nco_installdir)/lib$(distdir).a
+	$(INSTALL_DATA) ../config.log $(DESTDIR)$(nco_installdir)/config.log.$(distdir)
+	$(INSTALL) -d $(DESTDIR)$(nco_installdir)/include/$(distdir)
+	$(INSTALL_DATA) *.mod $(DESTDIR)$(nco_installdir)/include/$(distdir)
 
-FORCE:
-	@if [ -d $(DESTDIR)$(installdir) ]; then \
-          echo; \
-	  echo "*** NCO-style installation does not install into existing directories! ***"; \
-	  echo "*** $(DESTDIR)$(installdir) already exists! ***"; \
-          echo; \
-	  exit 1; \
-	fi
-        
 # ...Universal uninstallation
 uninstall:
 	-rm -fr $(DESTDIR)$(installdir) >/dev/null 2>&1
+
+# ...NCO-style uninstallation
+nco_uninstall:
+	-rm -fr $(DESTDIR)$(nco_installdir) >/dev/null 2>&1
 
 # ...Reconfig targets
 Makefile: Makefile.in ../config.status
