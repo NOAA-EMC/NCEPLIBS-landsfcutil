@@ -24,8 +24,9 @@ A. The easy (I hope) way...
 ===========================
 
 To build the single (_4) and mixed (_d) precision landsfcutil
-libraries, you can use the "make_landsfcutil_lib.sh" script specifying the
-build configuration. Type
+libraries, you can use the "make_landsfcutil_lib.sh" script 
+(the "make_landsfcutil_lib_wcoss-cray.sh" script on the WCOSS-Cray systems)
+specifying the build configuration. Type
 
   $ make_landsfcutil_lib.sh -h
 
@@ -36,21 +37,31 @@ The available build configurations to use are:
   gfortran-debug.setup  ifort-debug.setup  pgf95-debug.setup  xlf2003-debug.setup
   gfortran.setup        ifort.setup        pgf95.setup        xlf2003.setup
 
-So, on WCOSS Phase 1/2 you would type:
+  crayftn.setup
+  crayftn-debug.setup
+
+The build configurations define the compiler name and compiler flags.
+Those named with "debug" contain flags useful for debugging.
+
+So, on WCOSS Phase 1/2, to compile with intel, you would type:
 
   $ make_landsfcutil_lib.sh ifort.setup
-
 
 On Theia you could do the same, or if you wanted to use the PGI compiler,
 
   $ make_landsfcutil_lib.sh pgf95.setup
 
+On WCOSS-Cray/surge/luna if you wanted to use the Cray compiler,
+
+  $ make_landsfcutil_lib_wcoss-cray.sh crayftn.setup
 
 This script iterates over the single (_4) and mixed (_d) precision
 build configurations setting the appropriate default real and integer precision
 promotion compiler switches.
 
 Some additional points:
+- There is an "NCO-type" install that conforms to NCO's vertical structure.
+- There is also a "GNU-type" install.
 - The "NCO-type" install is performed by default.
 - The libraries are installed relative to the current directory. 
 - See section B.4 below for information about the installation directory
@@ -73,7 +84,7 @@ B. The more flexible way
 
 If you need more flexibility in the library build you can specify the necessary 
 information directly to the configure script that generates the makefiles. For
-example, on WCOSS/tide:
+example:
 
   $ ./configure --prefix=${PWD} \
                 --enable-promote=4|d \
@@ -126,8 +137,8 @@ directory specified by the --prefix switch.
 NCO Install
 ...........
 
-To install the library conforming to the NCO organisation and naming conventions,
-type:
+To install the library conforming to the NCO organisation and naming conventions
+on WCOSS Phase 2 type:
 
   $ make nco_install
 
@@ -190,6 +201,63 @@ would be modified something like:
   LIBS="-llandsfcutil"
 
 
+NCO Install as on WCOSS-Cray/Surge/Luna
+.......................................
+
+To install the library conforming to the NCO vertical structure and naming
+conventions on WCOSS-Cray/Surge/Luna, type:
+
+  $ make nco_cray_install
+
+If you create the single precsion (_4) and mixed precision (_d) libraries for
+v2.0.1 and invoke "make nco_cray_install", the directory tree will look like:
+
+  landsfcutil/
+    |
+    `--v2.0.1/${COMPILER}/
+                   |
+                   |--liblandsfcutil_v2.0.1_4.a
+                   |--liblandsfcutil_v2.0.1_d.a
+                   |
+                   `--include/
+                         |
+                         `--landsfcutil_v2.0.1_4/
+                         `--landsfcutil_v2.0.1_d/
+
+Here $COMPILER is the name of the Fortran compiler used.  For example, if the
+Intel compiler is used, then $COMPILER will be "ifort".  This may be changed
+at the configure step by "--enable-wcoss_cray_dir=${your_name}" as:
+
+  $ ./configure --prefix=${PWD} \
+                --enable-promote=4|d \
+                --enable-wcoss_cray_dir=intel \
+                FC="ifort" \
+                ... other arguments ...
+
+which would result in the following directory tree:
+
+  landsfcutil/
+    |
+    `--v2.0.1/intel/
+                |
+                |--liblandsfcutil_v2.0.1_4.a
+                |--liblandsfcutil_v2.0.1_d.a
+                |
+                `--include/
+                      |
+                      `--landsfcutil_v2.0.1_4/
+                      `--landsfcutil_v2.0.1_d/
+
+Let's assume the above install was moved into "/usrx/local/nceplibs", to use the
+single precision library in this structure in your own application, the usual
+environment variables would be modified something like:
+
+  libroot="/usrx/local/nceplibs/landsfcutil/v2.0.1/intel"
+  FCFLAGS="-I${libroot}/include/landsfcutil_v2.0.1_4 ${FCFLAGS}"
+  LDFLAGS="-L${libroot} ${LDFLAGS}"
+  LIBS="-llandsfcutil_v2.0.1_4"
+
+
 Uninstalling the library after a GNU-type install
 .................................................
 
@@ -215,13 +283,29 @@ To uninstall the library you can type:
   $ make nco_uninstall
   
 This will delete the created installation directory. So, for a library version
-(say, v2.0.1) and the default precision (4), if your configure script invocation
-was something like
+(say, v2.0.1) and if your configure script invocation was something like
 
   $ ./configure --prefix=${PWD} ...other command line arguments...
 
 then the "nco_uninstall" target will delete the "${PWD}/landsfcutil/v2.0.1" directory.
 
+
+Uninstalling the library after an NCO WCOSS-Cray/Surge/Luna install
+...................................................................
+
+To uninstall the library you can type:
+
+  $ make nco_cray_uninstall
+
+which will delete the created installation directory.
+
+Ex: For a library version of v2.0.1, if your configure script invocation was
+something like...
+
+  $ ./configure --prefix=${PWD} \
+    --enable-wcoss_cray_dir=intel  ...other command line arguments...
+
+then the "nco_cray_uninstall" target will delete the "${PWD}/landsfcutil/v2.0.1/intel" directory.
 
 
 5. Cleaning up

@@ -792,9 +792,8 @@
  real, intent(out) :: xpts, ypts
  real, intent(in)  :: rlat1, rlon1, rlon, rlat, dxs, dys, orient, h
 
- data first /.true./
-
  logical :: first
+ data first /.true./
 
  if (first) then
    DE=(1.+SIN(SLAT/DPR))*RERTH
