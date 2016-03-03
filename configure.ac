@@ -3,7 +3,7 @@ AC_REVISION($Id$)
 
 
 ## Initialise autoconf
-AC_INIT([nceplibs landsfcutil], [v2.0.1], [ncep.list.emc.nceplibs.support@noaa.gov], [landsfcutil])
+AC_INIT([nceplibs landsfcutil], [v2.1.0], [ncep.list.emc.nceplibs.support@noaa.gov], [landsfcutil])
 
 
 # Output info for user
