@@ -4,10 +4,10 @@
 # $Id$
 #
 # Script to iterate the configuration script over the set of precision
-# versions of the library.
+# versions of the library on the WCOSS-Cray.
 #
-# DO NOT USE ON WCOSS-CRAY machine.  Instead, use the script specifically
-# for that machine.
+# SCRIPT ONLY WORKS ON WCOSS-Cray.  Use "make_landsfcutil_lib.sh" on 
+# other machines.
 #
 # The build configuration setup (compiler, compiler switched, libraries, etc)
 # is specified via files in the config-setup/ subdirectory that are sourced
@@ -20,19 +20,19 @@
 usage()
 {
   echo
-  echo " Usage: make_landsfcutil_lib.sh [-g|-h] setup-file"
+  echo " Usage: ${SCRIPT_NAME} [-g|-h] setup-file"
   echo
   echo "   Script to iterate the configuration script over the set of precision"
   echo "   versions of the library."
   echo
-  echo "   DO NOT RUN THIS SCRIPT ON WCOSS-CRAY!!"
+  echo "   ONLY RUN THIS SCRIPT ON WCOSS-CRAY!!"
   echo
   echo '   The installation directory is ${PWD}'
   echo
   echo " Options:"
   echo "   -g          Perform a Gnu-style install into include/ and lib/ directories"
   echo "               The default is an NCO-style install to reflect the structure"
-  echo "               of /nwprod2/lib"
+  echo "               of /nwprod/lib on WCOSS-Cray."
   echo
   echo "   -h          Print this message and exit"
   echo
@@ -41,27 +41,23 @@ usage()
   echo "               the build configuration setup (compiler, compiler switches,"
   echo "               libraries, etc) that are sourced within this script."
   echo
-  echo "               Currently available setup files are:"
+  echo "               Valid setup files for WCOSS-Cray are:"
   echo
-  for file in `ls ./config-setup/`; do
+  for file in `ls ./config-setup/crayftn* ./config-setup/ifort* ./config-setup/gfortran*`; do
     echo "     `basename ${file}`" >&2
   done
   echo
 }
 
-
-# Setup
-# ...Definitions
 SCRIPT_NAME=$(basename $0)
 SUCCESS=0
 FAILURE=1
 MAKE="gmake"
-# ...Defaults
 INSTALL_TYPE="nco"
 
-# Don't use this script on WCOSS-Cray.
-if [[ "$(hostname)" == slogin? || "$(hostname)" == llogin? ]]; then # WCOSS Cray
-  echo; echo "${SCRIPT_NAME}: ERROR - Script cant be run on WCOSS-Cray machine!"
+# Script should only be run on WCOSS-Cray.
+if [[ "$(hostname)" != slogin? && "$(hostname)" != llogin? ]]; then # WCOSS Cray
+  echo; echo "${SCRIPT_NAME}: ERROR - Script may only be run on WCOSS-Cray machine!"
   usage
   exit ${FAILURE}
 fi
@@ -89,7 +85,7 @@ case ${OPTVAL} in
   # have been successfully parsed and all that
   # remains are the arguments
   \?) if [ $# -lt 1 ]; then
-        echo; echo "${SCRIPT_NAME}: ERROR - Missing build setup argument"
+        echo; echo "${SCRIPT_NAME}: ERROR - Missing build setup-file argument"
         usage
         exit ${FAILURE}
       fi;;
@@ -99,21 +95,55 @@ case ${OPTVAL} in
      exit ${FAILURE};;
 esac
 
-
-# Source the build setup
 SETUP_FILE="./config-setup/$1"
 if [ ! -f ${SETUP_FILE} ]; then
+  echo
   echo "${SCRIPT_NAME}: ERROR - Cannot find specified setup file ${SETUP_FILE}" >&2
+  usage
   exit ${FAILURE}
 fi
-. ${SETUP_FILE}
+. $SETUP_FILE
 
+module purge
+module load modules/3.2.6.7
 
-# The configuration and build
-PRECISION_LIST="4 d"
-for PRECISION in ${PRECISION_LIST}; do
+case $FC in
+  ifort)
+    module load PrgEnv-intel
+    module load craype-sandybridge     # Optimize for both sandybridge
+    FCFLAGS="${FCFLAGS} -axCore-AVX2"  # and for haswell.
+    R8FLAG="-r8"
+    COMP_NAME="intel"
+    ;;
+  gfortran)
+    module load PrgEnv-gnu
+    module load craype-haswell
+    R8FLAG="-fdefault-real-8"
+    COMP_NAME="gnu"
+    ;;
+  crayftn)
+    module load PrgEnv-cray
+    module load craype-haswell
+    R8FLAG="-s real64"
+    COMP_NAME="cray"
+    ;;
+  *)
+    echo "${SCRIPT_NAME}: ERROR - Unrecognized compiler ${FC}" >&2
+    exit ${FAILURE} ;;
+esac
 
-  # Generate the makefiles
+echo
+module list
+
+# Build each precision version of library.
+
+for PRECISION in 4 d; do  # single ("4"), or mixed ("d") precison
+
+  case $PRECISION in
+    4) FCFLAGS_ALL=${FCFLAGS} ;;
+    d) FCFLAGS_ALL="${FCFLAGS} ${R8FLAG}" ;;
+  esac
+
   echo; echo; echo; echo
   echo "==============================================================="
   echo "==============================================================="
@@ -121,18 +151,20 @@ for PRECISION in ${PRECISION_LIST}; do
   echo "==============================================================="
   echo "==============================================================="
   echo
-  ./configure --prefix=${PWD} --enable-promote=${PRECISION}
+
+  ./configure --prefix=${PWD} --enable-promote=${PRECISION} --enable-wcoss_cray_dir=${COMP_NAME} \
+    FC="ftn" FCFLAGS="${FCFLAGS_ALL} -craype-verbose"
   if [ $? -ne 0 ]; then
     echo "${SCRIPT_NAME}: ERROR configuring for precision ${PRECISION} version build" >&2
     exit ${FAILURE}
   fi
 
-  # Build the current configuration
   echo; echo
   echo "==============================================================="
   echo "Starting precision ${PRECISION} build"
   echo "==============================================================="
   echo
+
   ${MAKE} clean
   ${MAKE}
   if [ $? -ne 0 ]; then
@@ -147,7 +179,10 @@ for PRECISION in ${PRECISION_LIST}; do
     echo "Performing NCO-type install of precision ${PRECISION} build"
     echo "==============================================================="
     echo
-    ${MAKE} nco_install
+    case $PRECISION in
+      4) ${MAKE} nco_cray_uninstall 
+    esac
+    ${MAKE} nco_cray_install
     if [ $? -ne 0 ]; then
       echo "${SCRIPT_NAME}: ERROR in NCO-style installation of precision ${PRECISION} version" >&2
       exit ${FAILURE}
@@ -158,6 +193,7 @@ for PRECISION in ${PRECISION_LIST}; do
     echo "Performing GNU-type install of precision ${PRECISION} build"
     echo "==============================================================="
     echo
+    ${MAKE} uninstall
     ${MAKE} install
     if [ $? -ne 0 ]; then
       echo "${SCRIPT_NAME}: ERROR in Gnu-style installation of precision ${PRECISION} version" >&2
