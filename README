@@ -15,6 +15,7 @@ nceplibs support email: ncep.list.emc.nceplibs.support@noaa.gov
     3. Testing the library
     4. Installing the library
        - NCO Install
+       - NCO Cray Install
        - GNU Install
        - Uninstalling the library
     5. Cleaning up
@@ -26,8 +27,8 @@ A. The easy (I hope) way...
 
 To build the single (_4) and mixed (_d) precision landsfcutil
 libraries, you can use the "make_landsfcutil_lib.sh" script 
-(the "make_landsfcutil_lib_wcoss-cray.sh" script on the WCOSS-Cray systems)
-specifying the build configuration. Type
+(use the "make_landsfcutil_lib_wcoss-cray.sh" script on the 
+WCOSS-Cray systems) specifying the build configuration. Type:
 
   $ make_landsfcutil_lib.sh -h
 
@@ -52,7 +53,7 @@ On Theia you could do the same, or if you wanted to use the PGI compiler,
 
   $ make_landsfcutil_lib.sh pgf95.setup
 
-On WCOSS-Cray/surge/luna if you wanted to use the Cray compiler,
+On WCOSS-Cray/Surge/Luna if you wanted to use the Cray compiler,
 
   $ make_landsfcutil_lib_wcoss-cray.sh crayftn.setup
 
@@ -62,11 +63,12 @@ promotion compiler switches.
 
 Some additional points:
 - There is an "NCO-type" install that conforms to NCO's vertical structure.
-- There is also a "GNU-type" install.
-- The "NCO-type" install is performed by default.
+  That is the default.
+- There is also a "GNU-type" install that may be performed by adding
+  "-g" at the command line:  $ make_landsfcutil_lib.sh -g ifort.setup
 - The libraries are installed relative to the current directory. 
 - See section B.4 below for information about the installation directory
-  structure
+  structure.
 
 You can tailor the build process using this "make_landsfcutil_lib.sh" script by
 modifying the relevant build configuration setup file in the "config-setup/"
@@ -108,8 +110,6 @@ to "ifort" on linux systems if available (followed by "gfortran" and "pgf95" if 
 to "xlf2003" on AIX systems.
 
 
-
-
 2. Building the library
 -----------------------
 
@@ -119,12 +119,10 @@ To start the library build for a particular configuration, simply type
 
 
 
-
 3. Testing the library
 ----------------------
 
 We don't have any package-level tests yet. Sorry! They're coming...
-
 
 
 
@@ -188,9 +186,8 @@ a directory called "landsfcuutil_v2.0.1_4". That directory structure is shown be
          |
          `--liblandsfcutil.a
 
-Things to note:
- 1) The only versioned item in this type of install is the name of the
-    installation directory itself.
+Note: The only versioned item in this type of install is the name of the
+      installation directory itself.
 
 Let's assume the above install was moved into "/usrx/local/nceplibs", to use the
 library in this structure in your own application, the usual environment variables
@@ -210,20 +207,18 @@ conventions on WCOSS-Cray/Surge/Luna, type:
 
   $ make nco_cray_install
 
-If you create the single precsion (_4) and mixed precision (_d) libraries for
-v2.0.1 and invoke "make nco_cray_install", the directory tree will look like:
+If you create the single precsion (_4) library for v2.0.1 and invoke
+"make nco_cray_install", the directory tree will look like:
 
   landsfcutil/
     |
     `--v2.0.1/${COMPILER}/
                    |
                    |--liblandsfcutil_v2.0.1_4.a
-                   |--liblandsfcutil_v2.0.1_d.a
                    |
                    `--include/
                          |
                          `--landsfcutil_v2.0.1_4/
-                         `--landsfcutil_v2.0.1_d/
 
 Here $COMPILER is the name of the Fortran compiler used.  For example, if the
 Intel compiler is used, then $COMPILER will be "ifort".  This may be changed
@@ -242,12 +237,10 @@ which would result in the following directory tree:
     `--v2.0.1/intel/
                 |
                 |--liblandsfcutil_v2.0.1_4.a
-                |--liblandsfcutil_v2.0.1_d.a
                 |
                 `--include/
                       |
                       `--landsfcutil_v2.0.1_4/
-                      `--landsfcutil_v2.0.1_d/
 
 Let's assume the above install was moved into "/usrx/local/nceplibs", to use the
 single precision library in this structure in your own application, the usual

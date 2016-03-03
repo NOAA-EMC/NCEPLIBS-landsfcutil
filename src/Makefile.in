@@ -89,7 +89,7 @@ nco_cray_uninstall:
 
 # ...Reconfig targets
 Makefile: Makefile.in ../config.status
-	cd .. && ./config.status libsrc/$@
+	cd .. && ./config.status src/$@
 
 ../config.status: ../configure
 	cd .. && ./config.status --recheck
