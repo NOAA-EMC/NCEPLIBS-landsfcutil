@@ -5,7 +5,6 @@ FPP_FILES =
 FSRC_FILES = \
  consts.f \
  interp_utils.f \
- interp_utils_nesdis.f \
  ll2xy_utils.f \
  read_write_utils.f \
  soil_utils.f
