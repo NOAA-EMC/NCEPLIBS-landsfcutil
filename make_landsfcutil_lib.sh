@@ -1,7 +1,7 @@
 #!/bin/sh
 ###############################################################################
 #
-# $Id$
+# $Id: make_landsfcutil_lib.sh 71223 2016-03-03 18:08:22Z george.gayno@noaa.gov $
 #
 # Script to iterate the configuration script over the set of precision
 # versions of the library.

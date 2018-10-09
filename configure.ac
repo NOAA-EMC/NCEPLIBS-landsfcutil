@@ -1,5 +1,5 @@
 ## Put version control id tag in output configure script
-AC_REVISION($Id$)
+AC_REVISION($Id: configure.ac 71228 2016-03-03 19:04:43Z george.gayno@noaa.gov $)
 
 
 ## Initialise autoconf
