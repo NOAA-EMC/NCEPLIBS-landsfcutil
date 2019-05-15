@@ -1,4 +1,5 @@
 # *** for WCOSS IBM phase1/phase2 (intel) ***
+ module purge
  module load ics/17.0.3
  module load landsfcutil/v2.1.0
 

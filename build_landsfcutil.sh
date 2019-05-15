@@ -31,6 +31,11 @@
    [[ ${3,,} == installonly ]] && { inst=true; skip=true; }
    [[ ${3,,} == localinstallonly ]] && { local=true; inst=true; skip=true; }
  }
+
+ source ./Conf/Collect_info.sh
+ source ./Conf/Gen_cfunction.sh
+ source ./Conf/Reset_version.sh
+
  if [[ ${sys} == "intel_general" ]]; then
    sys6=${sys:6}
    source ./Conf/Landsfcutil_${sys:0:5}_${sys6^}.sh
@@ -44,9 +49,6 @@
    echo "??? LANDSFCUTIL: module/environment not set."
    exit 1
  }
-
- source ./Conf/Collect_info.sh
- source ./Conf/Gen_cfunction.sh
 
 set -x
  landsfcutilLib4=$(basename ${LANDSFCUTIL_LIB4})
@@ -100,19 +102,24 @@ set -x
    $local && {
               LIB_DIR4=..
               LIB_DIRd=..
+              INCP_DIR4=..
+              INCP_DIRd=..
+              SRC_DIR=
              } || {
-                   LIB_DIR4=$(dirname ${LANDSFCUTIL_LIB4})
-                   LIB_DIRd=$(dirname ${LANDSFCUTIL_LIBd})
-                  }
-   [ -d $LIB_DIR4 ] || mkdir -p $LIB_DIR4
-   [ -d $LIB_DIRd ] || mkdir -p $LIB_DIRd
-   INCP_DIR4=$(dirname $LANDSFCUTIL_INC4)
-   [ -d $LANDSFCUTIL_INC4 ] && rm -rf $LANDSFCUTIL_INC4 || mkdir -p $INCP_DIR4
-   INCP_DIRd=$(dirname $LANDSFCUTIL_INCd)
-   [ -d $LANDSFCUTIL_INCd ] && rm -rf $LANDSFCUTIL_INCd || mkdir -p $INCP_DIRd
-   SRC_DIR=$LANDSFCUTIL_SRC
-   $local && SRC_DIR=
-   [ -d $SRC_DIR ] || mkdir -p $SRC_DIR
+              LIB_DIR4=$(dirname $LANDSFCUTIL_LIB4)
+              LIB_DIRd=$(dirname $LANDSFCUTIL_LIBd)
+              INCP_DIR4=$(dirname $LANDSFCUTIL_INC4)
+              INCP_DIRd=$(dirname $LANDSFCUTIL_INCd)
+              SRC_DIR=$LANDSFCUTIL_SRC
+              [ -d $LIB_DIR4 ] || mkdir -p $LIB_DIR4
+              [ -d $LIB_DIRd ] || mkdir -p $LIB_DIRd
+              [ -d $LANDSFCUTIL_INC4 ] && { rm -rf $LANDSFCUTIL_INC4; } \
+                                       || { mkdir -p $INCP_DIR4; }
+              [ -d $LANDSFCUTIL_INCd ] && { rm -rf $LANDSFCUTIL_INCd; } \
+                                       || { mkdir -p $INCP_DIRd; }
+              [ -z $SRC_DIR ] || { [ -d $SRC_DIR ] || mkdir -p $SRC_DIR; }
+             }
+
    make clean LIB=
    make install LIB=$landsfcutilLib4 MOD=$landsfcutilInc4 \
                 LIB_DIR=$LIB_DIR4 INC_DIR=$INCP_DIR4 SRC_DIR=

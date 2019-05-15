@@ -1,6 +1,7 @@
 # *** for WCOSS Cray (intel) ***
+ module purge
  module load intel/18.1.163
- module load landsfcutil/v2.1.0
+ module load landsfcutil-intel/2.1.0
 
  export CC=icc
  export FC=ifort
