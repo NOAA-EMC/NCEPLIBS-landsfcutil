@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
  : ${THISDIR:=$(dirname $(readlink -f -n ${BASH_SOURCE[0]}))}
  CDIR=$PWD; cd $THISDIR
@@ -11,9 +11,11 @@
  if [[ ${sys} == "intel_general" ]]; then
    sys6=${sys:6}
    source ./Conf/Landsfcutil_${sys:0:5}_${sys6^}.sh
+   rinst=false
  elif [[ ${sys} == "gnu_general" ]]; then
    sys4=${sys:4}
    source ./Conf/Landsfcutil_${sys:0:3}_${sys4^}.sh
+   rinst=false
  else
    source ./Conf/Landsfcutil_intel_${sys^}.sh
  fi
@@ -21,9 +23,16 @@
    echo "??? LANDSFCUTIL: compilers not set." >&2
    exit 1
  }
- [[ -z $LANDSFCUTIL_VER || -z $LANDSFCUTIL_LIB4 ]] && {
-   echo "??? LANDSFCUTIL: module/environment not set." >&2
-   exit 1
+ [[ -z ${LANDSFCUTIL_VER+x} || -z ${LANDSFCUTIL_LIB4+x} ]] && {
+   [[ -z ${libver+x} || -z ${libver} ]] && {
+     echo "??? LANDSFCUTIL: \"libver\" not set." >&2
+     exit
+   }
+   LANDSFCUTIL_INC4=${libver}_4
+   LANDSFCUTIL_INCd=${libver}_d
+   LANDSFCUTIL_LIB4=lib${libver}_4.a
+   LANDSFCUTIL_LIBd=lib${libver}_d.a
+   LANDSFCUTIL_VER=v${libver##*_v}
  }
 
 set -x
@@ -36,7 +45,6 @@ set -x
  cd src
 #################
 
- $skip || {
 #-------------------------------------------------------------------
 # Start building libraries
 #
@@ -69,7 +77,6 @@ set -x
                                          &> $landsfcutilInfod
    make message MSGSRC="$(gen_cfunction $landsfcutilInfod OneLined LibInfod)" \
                 LIB=$landsfcutilLibd
- }
 
  $inst && {
 #
@@ -77,35 +84,44 @@ set -x
 #
    $local && {
      instloc=..
-     LIB_DIR4=$instloc
-     LIB_DIRd=$instloc
+     LIB_DIR=$instloc/lib
      INCP_DIR=$instloc/include
+     [ -d $LIB_DIR ] || { mkdir -p $LIB_DIR; }
      [ -d $INCP_DIR ] || { mkdir -p $INCP_DIR; }
+     LIB_DIR4=$LIB_DIR
+     LIB_DIRd=$LIB_DIR
      INCP_DIR4=$INCP_DIR
      INCP_DIRd=$INCP_DIR
      SRC_DIR=
    } || {
-     [[ $instloc == --- ]] && {
-       LIB_DIR4=$(dirname $LANDSFCUTIL_LIB4)
-       LIB_DIRd=$(dirname $LANDSFCUTIL_LIBd)
+     $rinst && {
+       LIB_DIR4=$(dirname ${LANDSFCUTIL_LIB4})
+       LIB_DIRd=$(dirname ${LANDSFCUTIL_LIBd})
        INCP_DIR4=$(dirname $LANDSFCUTIL_INC4)
        INCP_DIRd=$(dirname $LANDSFCUTIL_INCd)
+       [ -d $LANDSFCUTIL_INC4 ] && { rm -rf $LANDSFCUTIL_INC4; } \
+                       || { mkdir -p $INCP_DIR4; }
+       [ -d $LANDSFCUTIL_INCd ] && { rm -rf $LANDSFCUTIL_INCd; } \
+                       || { mkdir -p $INCP_DIRd; }
        SRC_DIR=$LANDSFCUTIL_SRC
      } || {
-       LIB_DIR4=$instloc
-       LIB_DIRd=$instloc
+       LIB_DIR=$instloc/lib
+       LIB_DIR4=$LIB_DIR
+       LIB_DIRd=$LIB_DIR
        INCP_DIR=$instloc/include
        INCP_DIR4=$INCP_DIR
        INCP_DIRd=$INCP_DIR
+       LANDSFCUTIL_INC4=$INCP_DIR4/$LANDSFCUTIL_INC4
+       LANDSFCUTIL_INCd=$INCP_DIRd/$LANDSFCUTIL_INCd
+       [ -d $LANDSFCUTIL_INC4 ] && { rm -rf $LANDSFCUTIL_INC4; } \
+                       || { mkdir -p $INCP_DIR4; }
+       [ -d $LANDSFCUTIL_INCd ] && { rm -rf $LANDSFCUTIL_INCd; } \
+                       || { mkdir -p $INCP_DIRd; }
        SRC_DIR=$instloc/src
        [[ $instloc == .. ]] && SRC_DIR=
      }
      [ -d $LIB_DIR4 ] || mkdir -p $LIB_DIR4
      [ -d $LIB_DIRd ] || mkdir -p $LIB_DIRd
-     [ -d $LANDSFCUTIL_INC4 ] && { rm -rf $LANDSFCUTIL_INC4; } \
-                              || { mkdir -p $INCP_DIR4; }
-     [ -d $LANDSFCUTIL_INCd ] && { rm -rf $LANDSFCUTIL_INCd; } \
-                              || { mkdir -p $INCP_DIRd; }
      [ -z $SRC_DIR ] || { [ -d $SRC_DIR ] || mkdir -p $SRC_DIR; }
    }
 
