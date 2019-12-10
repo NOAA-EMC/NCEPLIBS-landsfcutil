@@ -117,7 +117,7 @@ set -x
                        || { mkdir -p $INCP_DIR4; }
        [ -d $LANDSFCUTIL_INCd ] && { rm -rf $LANDSFCUTIL_INCd; } \
                        || { mkdir -p $INCP_DIRd; }
-       SRC_DIR=$instloc/src
+       SRC_DIR=$instloc/src/${libver}
        [[ $instloc == .. ]] && SRC_DIR=
      }
      [ -d $LIB_DIR4 ] || mkdir -p $LIB_DIR4
