@@ -1,4 +1,8 @@
-# *** for Theia (intel) ***
+# *** for Hera (intel) ***
+ $rinst && {
+   grep -E "(^|:|/)landsfcutil/" <<< "$LOADEDMODULES" &> /dev/null \
+    || module load landsfcutil/2.1.1
+ }
 
  export CC=icc
  export FC=ifort

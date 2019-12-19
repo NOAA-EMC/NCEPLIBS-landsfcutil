@@ -5,21 +5,8 @@
  ${USERMODE} && {
     echo "Environment set by user"
 # On theia/cray, user can load environment
-#   module load intel/18.0.1.163
-# Or set environment on specific platform
-    intel_version=2018.1.163
-    intel_topdir=/apps/intel/compilers_and_libraries_$intel_version
-    source $intel_topdir/linux/bin/compilervars.sh intel64
+    module load intel/18.0.1.163
  }
-
- ANCHORDIR=..
- export COMP=ips
- export LANDSFCUTIL_VER=v2.1.0
- export LANDSFCUTIL_SRC=
- export LANDSFCUTIL_INC4=$ANCHORDIR/include/landsfcutil_${LANDSFCUTIL_VER}_4
- export LANDSFCUTIL_INCd=$ANCHORDIR/include/landsfcutil_${LANDSFCUTIL_VER}_d
- export LANDSFCUTIL_LIB4=$ANCHORDIR/liblandsfcutil_${LANDSFCUTIL_VER}_4.a
- export LANDSFCUTIL_LIBd=$ANCHORDIR/liblandsfcutil_${LANDSFCUTIL_VER}_d.a
 
  export CC=icc
  export FC=ifort
