@@ -1,12 +1,14 @@
-cmake_minimum_required(VERSION 2.6)
-project(landsfcutil)
-set(VERSION v2.1.0)
+cmake_minimum_required(VERSION 3.15)
+project(landsfcutil VERSION 2.1.0)
+set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION} CACHE INTERNAL "${PROJECT_NAME} version number")
 enable_language (Fortran)
+
 if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE RELEASE CACHE STRING
-        "Choose the type of build, options are: PRODUCTION Debug Release."
-        FORCE)
+  set (CMAKE_BUILD_TYPE RELEASE CACHE STRING
+    "Choose the type of build, options are: PRODUCTION Debug Release."
+    FORCE)
 endif()
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
   set(IntelComp true )
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU*" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang*")
@@ -21,18 +23,47 @@ if(NOT BUILD_RELEASE )
 endif()
 STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "PRODUCTION" BUILD_PRODUCTION)
 STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "DEBUG" BUILD_DEBUG)
+
 if( (BUILD_RELEASE) OR (BUILD_PRODUCTION) )
   if(IntelComp)
-    set(CMAKE_Fortran_d_FLAGS "-r8 -O3 -fp-model strict -ip -FR " CACHE INTERNAL "" )
-    set(CMAKE_Fortran_4_FLAGS "-O3 -fp-model strict -ip -FR " CACHE INTERNAL "" )
+    set(shared_fortran_flags "-O3" "-fp-model strict" "-ip" "-FR")
+    set(fortran_d_flags "-r8")
+    set(fortran_4_flags)
   elseif(GNUComp)
-    message("setting gnu flags")
-    set(CMAKE_Fortran_d_FLAGS " -fdefault-real-8 -O3 -ffree-form " CACHE INTERNAL "" )
-    set(CMAKE_Fortran_4_FLAGS " -O3 -ffree-form " CACHE INTERNAL "" )
+    set(shared_fortran_flags "-O3" "-ffree-form")
+    set(fortran_d_flags "-fdefault-real-8")
+    set(fortran_4_flags)
   else()
     message("unknown compiler!")
     exit()
   endif()
 endif()
-add_subdirectory(4byte)
-add_subdirectory(double)
+
+file(GLOB fortran_src ${CMAKE_CURRENT_SOURCE_DIR}/src/*.f ${CMAKE_CURRENT_SOURCE_DIR}/src/*.F)
+
+set(kinds "4" "d")
+foreach(kind ${kinds})
+  set(lib_name ${PROJECT_NAME}_${kind})
+  set(versioned_lib_name ${PROJECT_NAME}_v${PROJECT_VERSION}_${kind})
+  add_library(${lib_name} STATIC ${fortran_src})
+  set_target_properties(${lib_name} PROPERTIES OUTPUT_NAME "${versioned_lib_name}")
+  
+  target_compile_definitions(${lib_name} PRIVATE "${platform_definition}")
+  target_compile_options(${lib_name} PRIVATE "${shared_fortran_flags};${fortran_${kind}_flags}")
+  
+  set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/include_${kind}")
+  set_target_properties(${lib_name} PROPERTIES Fortran_MODULE_DIRECTORY "${module_dir}")
+
+  target_include_directories(${lib_name} PUBLIC
+    $<BUILD_INTERFACE:${module_dir}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include_${kind}>)
+
+  install(TARGETS ${lib_name}
+    EXPORT ${PROJECT_NAME}-config
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib) 
+  install(DIRECTORY ${module_dir} DESTINATION ${CMAKE_INSTALL_PREFIX})
+endforeach()
+
+install(EXPORT ${PROJECT_NAME}-config DESTINATION ${CMAKE_INSTALL_PREFIX})
