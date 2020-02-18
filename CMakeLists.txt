@@ -1,69 +1,65 @@
 cmake_minimum_required(VERSION 3.15)
-project(landsfcutil VERSION 2.1.0)
-set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION} CACHE INTERNAL "${PROJECT_NAME} version number")
-enable_language (Fortran)
 
-if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE RELEASE CACHE STRING
-    "Choose the type of build, options are: PRODUCTION Debug Release."
-    FORCE)
+project(
+  landsfcutil
+  VERSION 2.1.0
+  LANGUAGES Fortran)
+
+if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE
+      "Release"
+      CACHE STRING "Choose the type of build." FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+                                               "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-  set(IntelComp true )
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU*" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang*")
-  set(GNUComp true )
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "pgc*")
-  set(PGIComp true )
+if(NOT CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel|GNU|Clang|AppleClang)$")
+  message(
+    WARNING "Compiler not officially supported: ${CMAKE_Fortran_COMPILER_ID}")
 endif()
 
-STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "RelWithDebInfo" BUILD_RELEASE)
-if(NOT BUILD_RELEASE )
-  STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "RELEASE" BUILD_RELEASE)
-endif()
-STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "PRODUCTION" BUILD_PRODUCTION)
-STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "DEBUG" BUILD_DEBUG)
-
-if( (BUILD_RELEASE) OR (BUILD_PRODUCTION) )
-  if(IntelComp)
-    set(shared_fortran_flags "-O3" "-fp-model strict" "-ip" "-FR")
-    set(fortran_d_flags "-r8")
-    set(fortran_4_flags)
-  elseif(GNUComp)
-    set(shared_fortran_flags "-O3" "-ffree-form")
-    set(fortran_d_flags "-fdefault-real-8")
-    set(fortran_4_flags)
-  else()
-    message("unknown compiler!")
-    exit()
-  endif()
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
+  set(CMAKE_Fortran_FLAGS "-ip -FR -fp-model strict")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g")
+  set(fortran_d_flags "-r8")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+  set(CMAKE_Fortran_FLAGS "-g -ffree-form")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-Wall")
+  set(fortran_d_flags "-fdefault-real-8")
 endif()
 
-file(GLOB fortran_src ${CMAKE_CURRENT_SOURCE_DIR}/src/*.f ${CMAKE_CURRENT_SOURCE_DIR}/src/*.F)
+set(fortran_src src/consts.f src/interp_utils.f src/ll2xy_utils.f
+                src/read_write_utils.f src/soil_utils.f)
 
 set(kinds "4" "d")
 foreach(kind ${kinds})
   set(lib_name ${PROJECT_NAME}_${kind})
   set(versioned_lib_name ${PROJECT_NAME}_v${PROJECT_VERSION}_${kind})
+  set(module_dir ${CMAKE_CURRENT_BINARY_DIR}/include_${kind})
+
   add_library(${lib_name} STATIC ${fortran_src})
-  set_target_properties(${lib_name} PROPERTIES OUTPUT_NAME "${versioned_lib_name}")
-  
-  target_compile_definitions(${lib_name} PRIVATE "${platform_definition}")
-  target_compile_options(${lib_name} PRIVATE "${shared_fortran_flags};${fortran_${kind}_flags}")
-  
-  set(module_dir "${CMAKE_CURRENT_BINARY_DIR}/include_${kind}")
-  set_target_properties(${lib_name} PROPERTIES Fortran_MODULE_DIRECTORY "${module_dir}")
+  set_target_properties(${lib_name} PROPERTIES OUTPUT_NAME
+                                               ${versioned_lib_name})
+  set_target_properties(${lib_name} PROPERTIES COMPILE_FLAGS
+                                               "${fortran_${kind}_flags}")
+  set_target_properties(${lib_name} PROPERTIES Fortran_MODULE_DIRECTORY
+                                               ${module_dir})
+  target_include_directories(
+    ${lib_name}
+    PUBLIC $<BUILD_INTERFACE:${module_dir}>
+           $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include_${kind}>)
 
-  target_include_directories(${lib_name} PUBLIC
-    $<BUILD_INTERFACE:${module_dir}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include_${kind}>)
-
-  install(TARGETS ${lib_name}
+  install(
+    TARGETS ${lib_name}
     EXPORT ${PROJECT_NAME}-config
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib) 
+    ARCHIVE DESTINATION lib)
   install(DIRECTORY ${module_dir} DESTINATION ${CMAKE_INSTALL_PREFIX})
 endforeach()
 
-install(EXPORT ${PROJECT_NAME}-config DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(EXPORT ${PROJECT_NAME}-config
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME})
