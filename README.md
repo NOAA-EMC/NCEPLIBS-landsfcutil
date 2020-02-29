@@ -1,11 +1,12 @@
 # Landsfcutil
 
-Does something useful, I guess!
+Utility routines useful for initializing land-surface states in NCEP models
 
+Code Manager: George Gayno
 
 ### Prerequisites
 
-Compilers: GNU | Intel | Clang | AppleClang | PGI
+Compilers: GNU | Intel | Clang | AppleClang 
 
 
 ### Installing
@@ -21,7 +22,7 @@ make install
 
 ### Version
 
-2.1.0
+2.2.0
 
 
 ### Authors
