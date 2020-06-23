@@ -25,7 +25,7 @@ foreach(kind ${kinds})
   set_target_properties(${lib_name} PROPERTIES Fortran_MODULE_DIRECTORY ${module_dir})
   target_include_directories(${lib_name} PUBLIC
     $<BUILD_INTERFACE:${module_dir}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include_${kind}>)
+    $<INSTALL_INTERFACE:include_${kind}>)
 
   list(APPEND LIB_TARGETS ${lib_name})
   
