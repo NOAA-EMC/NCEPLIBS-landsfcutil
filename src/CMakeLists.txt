@@ -1,14 +1,18 @@
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
-  set(CMAKE_Fortran_FLAGS "-g -ip -FR -fp-model strict")
+  set(CMAKE_Fortran_FLAGS "-g -ip -FR -fp-model strict ${CMAKE_Fortran_FLAGS}")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
   set(fortran_d_flags "-r8")
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
-  set(CMAKE_Fortran_FLAGS "-g -ffree-form")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
+  set(CMAKE_Fortran_FLAGS "-g -ffree-form ${CMAKE_Fortran_FLAGS}")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
   set(CMAKE_Fortran_FLAGS_DEBUG "-ggdb -Wall")
   set(fortran_d_flags "-fdefault-real-8")
 endif()
+
+if(${CMAKE_Fortran_COMPILER_ID} MATCHES "^(GNU)$" AND ${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10)
+   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w -fallow-argument-mismatch -fallow-invalid-boz")
+ endif()
 
 set(fortran_src consts.f interp_utils.f ll2xy_utils.f
   read_write_utils.f soil_utils.f)
