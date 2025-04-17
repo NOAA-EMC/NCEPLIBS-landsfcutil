@@ -24,6 +24,8 @@ make -j2
 make install
 ```
 
+NCEPLIBS-landsfcutil is also available through [Spack](https://spack.io) as '[landsfcutil](https://github.com/spack/spack/tree/develop/var/spack/repos/builtin/packages/landsfcutil)'.
+
 ## Disclaimer
 
 The United States Department of Commerce (DOC) GitHub project code is
